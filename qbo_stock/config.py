@@ -44,7 +44,10 @@ class Settings:
             "teste": "sandbox",
         }.get(environment, environment)
         if environment not in {"sandbox", "production"}:
-            raise ValueError("QBO_ENVIRONMENT deve ser 'sandbox' ou 'production'.")
+            raise ValueError(
+                "QBO_ENVIRONMENT deve ser 'sandbox' ou 'production'. "
+                f"Valor recebido: {environment!r}."
+            )
 
         redirect_uri = _env("QBO_REDIRECT_URI")
         vercel_hostname = (
