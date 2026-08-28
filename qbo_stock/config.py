@@ -11,7 +11,7 @@ def _env(name: str, default: str = "") -> str:
         value = value[len(prefix) :].strip()
     if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
         value = value[1:-1].strip()
-    return value
+    return value or default
 
 
 @dataclass(frozen=True)

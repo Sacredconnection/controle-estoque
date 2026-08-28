@@ -39,3 +39,11 @@ def test_vercel_values_pasted_with_assignment_or_quotes_are_normalized(monkeypat
     assert settings.qbo_environment == "production"
     assert settings.port == 8000
     assert settings.qbo_redirect_uri.endswith("/oauth/callback")
+
+
+def test_empty_environment_uses_safe_sandbox_default(monkeypatch):
+    monkeypatch.setenv("QBO_ENVIRONMENT", "")
+
+    settings = Settings.from_env()
+
+    assert settings.qbo_environment == "sandbox"
