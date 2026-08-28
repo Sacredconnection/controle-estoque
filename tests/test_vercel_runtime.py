@@ -35,6 +35,19 @@ def test_vercel_uses_writable_temporary_instance(monkeypatch, tmp_path):
     assert instance_dir(tmp_path / "readonly") == tmp_path / "qbo-stock-instance"
 
 
+def test_read_only_deployment_falls_back_without_vercel_variable(monkeypatch, tmp_path):
+    monkeypatch.delenv("VERCEL", raising=False)
+    monkeypatch.delenv("QBO_INSTANCE_DIR", raising=False)
+    monkeypatch.setattr("qbo_stock.runtime.tempfile.gettempdir", lambda: str(tmp_path))
+
+    def deny_local_probe(*args, **kwargs):
+        raise PermissionError("deployment somente leitura")
+
+    monkeypatch.setattr("qbo_stock.runtime.tempfile.NamedTemporaryFile", deny_local_probe)
+
+    assert instance_dir(tmp_path / "deployment") == tmp_path / "qbo-stock-instance"
+
+
 def test_vercel_secrets_are_stable_between_cold_starts(monkeypatch, tmp_path):
     monkeypatch.setenv("VERCEL", "1")
     monkeypatch.setenv("FLASK_SECRET_KEY", "segredo-estavel-da-sessao")

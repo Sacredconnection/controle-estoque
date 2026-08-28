@@ -12,4 +12,12 @@ def instance_dir(base_dir: str | Path) -> Path:
         return Path(configured).expanduser().resolve()
     if os.getenv("VERCEL", "").strip():
         return Path(tempfile.gettempdir()) / "qbo-stock-instance"
-    return Path(base_dir).resolve() / "instance"
+
+    local_instance = Path(base_dir).resolve() / "instance"
+    try:
+        local_instance.mkdir(parents=True, exist_ok=True)
+        with tempfile.NamedTemporaryFile(dir=local_instance, prefix=".write-probe-"):
+            pass
+        return local_instance
+    except OSError:
+        return Path(tempfile.gettempdir()) / "qbo-stock-instance"
