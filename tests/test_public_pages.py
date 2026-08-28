@@ -1,13 +1,11 @@
 from dataclasses import replace
 
 import app as app_module
-import dashboard_app
 
 
 def test_required_intuit_pages_are_public_with_dashboard_password(monkeypatch):
     protected_settings = replace(app_module.settings, app_password="senha-de-teste")
     monkeypatch.setattr(app_module, "settings", protected_settings)
-    monkeypatch.setattr(dashboard_app, "settings", protected_settings)
     app_module.app.config.update(TESTING=True)
     client = app_module.app.test_client()
 

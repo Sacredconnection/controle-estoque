@@ -5,9 +5,92 @@ import threading
 import time
 import uuid
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
+import requests
+
 from .db import Database
+
+
+class _RequestsBlobClient:
+    api_url = "https://vercel.com/api/blob"
+
+    def __init__(self, token: str) -> None:
+        self.token = token
+        parts = token.split("_")
+        if len(parts) < 4 or not parts[3]:
+            raise ValueError("BLOB_READ_WRITE_TOKEN inválido.")
+        self.store_id = parts[3]
+
+    def _headers(self, **extra: str) -> dict[str, str]:
+        return {
+            "Authorization": f"Bearer {self.token}",
+            "x-api-version": "11",
+            "x-api-blob-request-id": (
+                f"{self.store_id}:{int(time.time() * 1000)}:{uuid.uuid4().hex[:8]}"
+            ),
+            "x-api-blob-request-attempt": "0",
+            **extra,
+        }
+
+    def iter_objects(self, *, prefix: str):
+        cursor = None
+        while True:
+            params = {"prefix": prefix, "limit": 1000}
+            if cursor:
+                params["cursor"] = cursor
+            response = requests.get(
+                self.api_url,
+                headers=self._headers(),
+                params=params,
+                timeout=30,
+            )
+            response.raise_for_status()
+            payload = response.json()
+            for item in payload.get("blobs", []):
+                yield SimpleNamespace(
+                    pathname=item["pathname"],
+                    url=item.get("url", ""),
+                )
+            cursor = payload.get("cursor")
+            if not payload.get("hasMore") or not cursor:
+                break
+
+    def get(self, pathname: str, **kwargs):
+        url = (
+            f"https://{self.store_id}.private.blob.vercel-storage.com/"
+            f"{pathname.lstrip('/')}"
+        )
+        response = requests.get(
+            url,
+            headers={"Authorization": f"Bearer {self.token}"},
+            timeout=30,
+        )
+        if response.status_code == 404:
+            return None
+        response.raise_for_status()
+        return SimpleNamespace(status_code=response.status_code, content=response.content)
+
+    def put(self, pathname: str, body: bytes, **kwargs):
+        response = requests.put(
+            self.api_url,
+            headers=self._headers(
+                **{
+                    "x-content-type": kwargs.get(
+                        "content_type", "application/octet-stream"
+                    ),
+                    "x-add-random-suffix": "0",
+                    "x-allow-overwrite": "0",
+                    "x-vercel-blob-access": kwargs.get("access", "private"),
+                }
+            ),
+            params={"pathname": pathname},
+            data=body,
+            timeout=30,
+        )
+        response.raise_for_status()
+        return SimpleNamespace(pathname=pathname)
 
 
 class VercelBlobDatabase(Database):
@@ -23,9 +106,7 @@ class VercelBlobDatabase(Database):
         client: Any | None = None,
     ) -> None:
         if client is None:
-            from vercel.blob import BlobClient
-
-            client = BlobClient(token=token)
+            client = _RequestsBlobClient(token)
         self._client = client
         self._lock = threading.RLock()
         self._snapshot_pathname: str | None = None
