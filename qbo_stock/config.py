@@ -4,6 +4,16 @@ import os
 from dataclasses import dataclass
 
 
+def _env(name: str, default: str = "") -> str:
+    value = os.getenv(name, default).strip()
+    prefix = f"{name}="
+    if value.upper().startswith(prefix):
+        value = value[len(prefix) :].strip()
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+        value = value[1:-1].strip()
+    return value
+
+
 @dataclass(frozen=True)
 class Settings:
     qbo_client_id: str
@@ -23,14 +33,22 @@ class Settings:
 
     @classmethod
     def from_env(cls) -> "Settings":
-        environment = os.getenv("QBO_ENVIRONMENT", "sandbox").strip().lower()
+        environment = _env("QBO_ENVIRONMENT", "sandbox").lower()
+        environment = {
+            "prod": "production",
+            "produção": "production",
+            "producao": "production",
+            "real": "production",
+            "dev": "sandbox",
+            "development": "sandbox",
+            "teste": "sandbox",
+        }.get(environment, environment)
         if environment not in {"sandbox", "production"}:
             raise ValueError("QBO_ENVIRONMENT deve ser 'sandbox' ou 'production'.")
 
-        redirect_uri = os.getenv("QBO_REDIRECT_URI", "").strip()
+        redirect_uri = _env("QBO_REDIRECT_URI")
         vercel_hostname = (
-            os.getenv("VERCEL_PROJECT_PRODUCTION_URL", "").strip()
-            or os.getenv("VERCEL_URL", "").strip()
+            _env("VERCEL_PROJECT_PRODUCTION_URL") or _env("VERCEL_URL")
         ).strip("/")
         if not redirect_uri and vercel_hostname:
             if not vercel_hostname.startswith(("http://", "https://")):
@@ -40,31 +58,29 @@ class Settings:
             redirect_uri = "http://localhost:8000/oauth/callback"
 
         try:
-            port = int(os.getenv("PORT", "8000"))
+            port = int(_env("PORT", "8000"))
         except ValueError as exc:
             raise ValueError("PORT deve ser um número inteiro.") from exc
 
         return cls(
-            qbo_client_id=os.getenv("QBO_CLIENT_ID", "").strip(),
-            qbo_client_secret=os.getenv("QBO_CLIENT_SECRET", "").strip(),
+            qbo_client_id=_env("QBO_CLIENT_ID"),
+            qbo_client_secret=_env("QBO_CLIENT_SECRET"),
             qbo_redirect_uri=redirect_uri,
             qbo_environment=environment,
-            qbo_minor_version=os.getenv("QBO_MINOR_VERSION", "75").strip(),
-            company_a_label=os.getenv("COMPANY_A_LABEL", "Empresa A").strip() or "Empresa A",
-            company_b_label=os.getenv("COMPANY_B_LABEL", "Empresa B").strip() or "Empresa B",
-            legal_business_name=os.getenv(
-                "LEGAL_BUSINESS_NAME", "Sacred Connection"
-            ).strip()
+            qbo_minor_version=_env("QBO_MINOR_VERSION", "75"),
+            company_a_label=_env("COMPANY_A_LABEL", "Empresa A") or "Empresa A",
+            company_b_label=_env("COMPANY_B_LABEL", "Empresa B") or "Empresa B",
+            legal_business_name=_env("LEGAL_BUSINESS_NAME", "Sacred Connection")
             or "Sacred Connection",
-            legal_contact_email=os.getenv(
+            legal_contact_email=_env(
                 "LEGAL_CONTACT_EMAIL", "info@sacredconnection.co"
-            ).strip()
+            )
             or "info@sacredconnection.co",
-            legal_country=os.getenv("LEGAL_COUNTRY", "Brasil").strip() or "Brasil",
-            app_password=os.getenv("APP_PASSWORD", "").strip(),
-            host=os.getenv("HOST", "127.0.0.1").strip() or "127.0.0.1",
+            legal_country=_env("LEGAL_COUNTRY", "Brasil") or "Brasil",
+            app_password=_env("APP_PASSWORD"),
+            host=_env("HOST", "127.0.0.1") or "127.0.0.1",
             port=port,
-            debug=os.getenv("DEBUG", "false").strip().lower() in {"1", "true", "yes", "sim"},
+            debug=_env("DEBUG", "false").lower() in {"1", "true", "yes", "sim"},
         )
 
     @property
