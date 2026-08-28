@@ -8,8 +8,8 @@ import webbrowser
 from functools import wraps
 from pathlib import Path
 from threading import Timer
+from types import SimpleNamespace
 
-from dotenv import load_dotenv
 from flask import (
     Flask,
     flash,
@@ -20,59 +20,97 @@ from flask import (
     session,
     url_for,
 )
-from openpyxl import Workbook
-from openpyxl.styles import Alignment, Font, PatternFill
-from openpyxl.utils import get_column_letter
-
-load_dotenv()
-
-from qbo_stock.config import Settings
-from qbo_stock.consolidation import consolidate_by_base_product, consolidate_inventory
-from qbo_stock.db import Database
-from qbo_stock.demo import DEMO_ITEMS
-from qbo_stock.qbo import QBOError, QuickBooksService
-from qbo_stock.runtime import instance_dir
-from qbo_stock.security import TokenCipher, load_flask_secret
-from qbo_stock.vercel_storage import VercelBlobDatabase
 
 BASE_DIR = Path(__file__).resolve().parent
-INSTANCE_DIR = instance_dir(BASE_DIR)
-INSTANCE_DIR.mkdir(parents=True, exist_ok=True)
-
-settings = Settings.from_env()
-app = Flask(__name__, instance_path=str(INSTANCE_DIR), instance_relative_config=True)
-app.secret_key = load_flask_secret(INSTANCE_DIR)
+app = Flask(__name__)
+app.secret_key = secrets.token_hex(32)
 app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE="Lax",
 )
-if settings.qbo_redirect_uri.lower().startswith("https://"):
-    app.config["SESSION_COOKIE_SECURE"] = True
 
-blob_token = os.getenv("BLOB_READ_WRITE_TOKEN", "").strip()
-if blob_token:
-    try:
-        db = VercelBlobDatabase(INSTANCE_DIR / "quickbooks_stock.db", blob_token)
-        storage_mode = "vercel-blob"
-    except Exception:
+startup_error: str | None = None
+
+try:
+    from dotenv import load_dotenv
+    from openpyxl import Workbook
+    from openpyxl.styles import Alignment, Font, PatternFill
+    from openpyxl.utils import get_column_letter
+
+    from qbo_stock.config import Settings
+    from qbo_stock.consolidation import consolidate_by_base_product, consolidate_inventory
+    from qbo_stock.db import Database
+    from qbo_stock.demo import DEMO_ITEMS
+    from qbo_stock.qbo import QBOError, QuickBooksService
+    from qbo_stock.runtime import instance_dir
+    from qbo_stock.security import TokenCipher, load_flask_secret
+    from qbo_stock.vercel_storage import VercelBlobDatabase
+
+    load_dotenv()
+    INSTANCE_DIR = instance_dir(BASE_DIR)
+    INSTANCE_DIR.mkdir(parents=True, exist_ok=True)
+    settings = Settings.from_env()
+    app.secret_key = load_flask_secret(INSTANCE_DIR)
+    if settings.qbo_redirect_uri.lower().startswith("https://"):
+        app.config["SESSION_COOKIE_SECURE"] = True
+
+    blob_token = os.getenv("BLOB_READ_WRITE_TOKEN", "").strip()
+    if blob_token:
+        try:
+            db = VercelBlobDatabase(INSTANCE_DIR / "quickbooks_stock.db", blob_token)
+            storage_mode = "vercel-blob"
+        except Exception:
+            db = Database(INSTANCE_DIR / "quickbooks_stock.db")
+            storage_mode = "temporario"
+    else:
         db = Database(INSTANCE_DIR / "quickbooks_stock.db")
-        storage_mode = "temporario"
-else:
-    db = Database(INSTANCE_DIR / "quickbooks_stock.db")
-    storage_mode = "temporario" if os.getenv("VERCEL", "").strip() else "local"
-cipher = TokenCipher(INSTANCE_DIR)
-qbo = QuickBooksService(settings, db, cipher)
+        storage_mode = "temporario" if os.getenv("VERCEL", "").strip() else "local"
+    cipher = TokenCipher(INSTANCE_DIR)
+    qbo = QuickBooksService(settings, db, cipher)
+except Exception as exc:
+    startup_error = f"{type(exc).__name__}: {exc}"
+    INSTANCE_DIR = BASE_DIR / "instance"
+    storage_mode = "indisponivel"
+    settings = SimpleNamespace(
+        app_password="",
+        labels={"A": "Empresa A", "B": "Empresa B"},
+        qbo_environment="production",
+        credentials_ready=False,
+        legal_business_name=os.getenv("LEGAL_BUSINESS_NAME", "Sacred Connection"),
+        legal_contact_email=os.getenv(
+            "LEGAL_CONTACT_EMAIL", "info@sacredconnection.co"
+        ),
+        legal_country=os.getenv("LEGAL_COUNTRY", "Brasil"),
+        production_redirect_warning=False,
+        host="127.0.0.1",
+        port=8000,
+        debug=False,
+    )
+    QBOError = RuntimeError
+
+    class _Unavailable:
+        def __getattr__(self, name):
+            raise RuntimeError(startup_error or "Aplicação indisponível.")
+
+    db = _Unavailable()
+    qbo = _Unavailable()
 
 
 @app.before_request
 def refresh_vercel_storage():
-    if storage_mode == "vercel-blob" and request.endpoint not in {
+    public_endpoints = {
         "health",
         "eula",
         "privacy_policy",
         "connect_landing",
         "disconnect_landing",
-    }:
+    }
+    if startup_error and request.endpoint not in public_endpoints:
+        return {
+            "status": "startup_error",
+            "message": "A aplicação não pôde ser inicializada. Consulte /health.",
+        }, 503
+    if storage_mode == "vercel-blob" and request.endpoint not in public_endpoints:
         db.refresh(strict=False)
 
 
@@ -147,6 +185,11 @@ def inject_globals():
 
 @app.route("/health")
 def health():
+    if startup_error:
+        return {
+            "status": "startup_error",
+            "error": startup_error,
+        }, 500
     return {"status": "ok", "storage": storage_mode}
 
 
