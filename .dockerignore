@@ -1,0 +1,13 @@
+.git
+.github
+.vscode
+.venv
+__pycache__
+.pytest_cache
+*.py[cod]
+.env
+.env.*
+!.env.example
+instance/
+tests/
+AGENTS.md

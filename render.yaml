@@ -1,0 +1,45 @@
+# yaml-language-server: $schema=https://render.com/schema/render.yaml.json
+
+previews:
+  generation: off
+
+services:
+  - type: web
+    name: controle-estoque-qbo
+    runtime: docker
+    plan: 0.5c-512mb
+    region: virginia
+    branch: main
+    numInstances: 1
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    disk:
+      name: qbo-instance
+      mountPath: /app/instance
+      sizeGB: 1
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: "10000"
+      - key: OPEN_BROWSER
+        value: "false"
+      - key: DEBUG
+        value: "false"
+      - key: QBO_ENVIRONMENT
+        value: production
+      - key: QBO_MINOR_VERSION
+        value: "75"
+      - key: COMPANY_A_LABEL
+        value: Empresa A
+      - key: COMPANY_B_LABEL
+        value: Empresa B
+      - key: LEGAL_BUSINESS_NAME
+        value: Sacred Connection
+      - key: LEGAL_CONTACT_EMAIL
+        value: info@sacredconnection.co
+      - key: LEGAL_COUNTRY
+        value: Brasil
+      - key: APP_PASSWORD
+        sync: false

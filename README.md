@@ -200,7 +200,45 @@ Em produção, cadastre URLs HTTPS completas, por exemplo
 recebe apenas o domínio, sem `https://`. Antes de publicar, confirme
 `LEGAL_BUSINESS_NAME`, `LEGAL_CONTACT_EMAIL` e `LEGAL_COUNTRY` no arquivo `.env`.
 
-## 8. Estrutura do projeto
+## 8. Publicar no Render com SQLite persistente
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Sacredconnection/controle-estoque)
+
+O arquivo `render.yaml` cria um serviço Docker com uma única instância e um disco de 1 GB
+montado em `/app/instance`. Esse disco preserva o banco SQLite, os tokens OAuth criptografados
+e as chaves entre reinícios e deploys. A Render exige um serviço pago para anexar disco
+persistente; revise o valor exibido no painel antes de aprovar.
+
+1. Clique em **Deploy to Render** e autorize o acesso ao repositório.
+2. Revise o Blueprint e defina uma senha forte em `APP_PASSWORD`.
+3. Aplique o Blueprint e aguarde o endereço `*.onrender.com` ficar disponível.
+4. Use esse endereço para preencher as URLs públicas no painel da Intuit.
+5. Depois que a Intuit liberar as credenciais de produção, adicione no ambiente do serviço:
+   - `QBO_CLIENT_ID`;
+   - `QBO_CLIENT_SECRET`.
+6. Reinicie o serviço depois de salvar as credenciais.
+
+Quando `QBO_REDIRECT_URI` não é informada, o aplicativo usa automaticamente
+`https://<RENDER_EXTERNAL_HOSTNAME>/oauth/callback`. Se configurar um domínio personalizado,
+adicione `QBO_REDIRECT_URI=https://seu-dominio.com/oauth/callback` no ambiente da Render e
+cadastre exatamente a mesma URL na Intuit.
+
+Com o endereço fornecido pela Render, preencha a Intuit assim:
+
+```text
+Host domain:              seu-servico.onrender.com
+Launch URL:               https://seu-servico.onrender.com/launch
+Disconnect URL:           https://seu-servico.onrender.com/disconnect
+Connect/Reconnect URL:    https://seu-servico.onrender.com/connect
+End-user license URL:     https://seu-servico.onrender.com/eula
+Privacy policy URL:       https://seu-servico.onrender.com/privacy
+OAuth Redirect URI:       https://seu-servico.onrender.com/oauth/callback
+```
+
+Não monte o disco em outro caminho: somente `/app/instance` mantém juntos o banco e as chaves
+necessárias para descriptografar os tokens existentes.
+
+## 9. Estrutura do projeto
 
 ```text
 app.py                         painel, filtros, Excel e CSV
@@ -214,14 +252,14 @@ static/                        aparência do painel
 tests/                         testes da lógica
 ```
 
-## 9. Rodar testes
+## 10. Rodar testes
 
 ```bash
 python -m pytest
 python -m compileall -q .
 ```
 
-## 10. Limitações desta versão
+## 11. Limitações desta versão
 
 - Consolida somente dois QuickBooks Online.
 - Lê itens com controle de quantidade (`TrackQtyOnHand` ou tipo `Inventory`).
@@ -230,7 +268,7 @@ python -m compileall -q .
 - O resumo por produto-base depende de um padrão identificável de SKU ou nome.
 - Gramaturas não explícitas precisam ser corrigidas no nome/SKU do QuickBooks ou tratadas em uma futura tabela manual de equivalências.
 
-## 11. Próximas evoluções possíveis
+## 12. Próximas evoluções possíveis
 
 1. estoque da terceira empresa/ERP;
 2. carregamentos em trânsito;

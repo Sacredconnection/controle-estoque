@@ -27,6 +27,13 @@ class Settings:
         if environment not in {"sandbox", "production"}:
             raise ValueError("QBO_ENVIRONMENT deve ser 'sandbox' ou 'production'.")
 
+        redirect_uri = os.getenv("QBO_REDIRECT_URI", "").strip()
+        render_hostname = os.getenv("RENDER_EXTERNAL_HOSTNAME", "").strip().strip("/")
+        if not redirect_uri and render_hostname:
+            redirect_uri = f"https://{render_hostname}/oauth/callback"
+        if not redirect_uri:
+            redirect_uri = "http://localhost:8000/oauth/callback"
+
         try:
             port = int(os.getenv("PORT", "8000"))
         except ValueError as exc:
@@ -35,9 +42,7 @@ class Settings:
         return cls(
             qbo_client_id=os.getenv("QBO_CLIENT_ID", "").strip(),
             qbo_client_secret=os.getenv("QBO_CLIENT_SECRET", "").strip(),
-            qbo_redirect_uri=os.getenv(
-                "QBO_REDIRECT_URI", "http://localhost:8000/oauth/callback"
-            ).strip(),
+            qbo_redirect_uri=redirect_uri,
             qbo_environment=environment,
             qbo_minor_version=os.getenv("QBO_MINOR_VERSION", "75").strip(),
             company_a_label=os.getenv("COMPANY_A_LABEL", "Empresa A").strip() or "Empresa A",
