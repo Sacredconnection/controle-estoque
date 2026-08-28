@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Desconectar · Estoque QuickBooks{% endblock %}
+{% block content %}
+<section class="action-card">
+  <div class="eyebrow">QuickBooks Online</div>
+  <h1>Conexão encerrada</h1>
+  <p>
+    Se você desconectou o aplicativo dentro do QuickBooks Online, novas sincronizações deixam
+    de funcionar. Para remover também os tokens e a cópia local do estoque, abra o painel e use
+    o botão <strong>Desconectar</strong> da empresa correspondente.
+  </p>
+  <p>
+    Caso não consiga entrar no painel, solicite a exclusão pelo e-mail
+    <a href="mailto:{{ legal_contact_email }}">{{ legal_contact_email }}</a>. Poderemos pedir
+    uma confirmação de identidade e de autoridade sobre a empresa conectada.
+  </p>
+  <div class="button-row">
+    <a class="btn btn-primary" href="{{ url_for('index') }}">Abrir painel</a>
+    <a class="btn btn-secondary" href="{{ url_for('connect_landing') }}">Conectar novamente</a>
+  </div>
+</section>
+{% endblock %}

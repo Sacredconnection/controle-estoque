@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}Termos de uso · Estoque QuickBooks{% endblock %}
+{% block content %}
+<article class="legal-card">
+  <h1>Contrato de Licença de Usuário Final</h1>
+  <p class="legal-meta">Última atualização: 28 de agosto de 2026</p>
+
+  <p class="legal-summary">
+    Este contrato regula o uso do aplicativo de consolidação de estoque (“Aplicativo”)
+    disponibilizado por {{ legal_business_name }} (“nós”). Leia-o antes de conectar uma
+    empresa do QuickBooks Online.
+  </p>
+
+  <h2>1. Aceitação</h2>
+  <p>
+    Ao acessar o Aplicativo, conectar uma empresa ou utilizar suas funcionalidades, você
+    declara que leu e aceitou este contrato. Se estiver agindo em nome de uma empresa,
+    declara possuir poderes para vinculá-la a estes termos. Se não concordar, não utilize
+    o Aplicativo nem conecte uma conta do QuickBooks Online.
+  </p>
+
+  <h2>2. Licença de uso</h2>
+  <p>
+    Concedemos uma licença limitada, não exclusiva, intransferível, revogável e sem direito
+    de sublicenciamento para acessar e usar o Aplicativo em atividades internas legítimas
+    de controle de estoque, durante o período em que seu acesso estiver autorizado.
+  </p>
+  <p>
+    Esta licença rege o serviço disponibilizado ao usuário. Eventual código-fonte publicado
+    permanece sujeito à licença própria que acompanha esse código.
+  </p>
+
+  <h2>3. Funcionamento do Aplicativo</h2>
+  <p>
+    O Aplicativo conecta até duas empresas do QuickBooks Online, consulta informações da
+    empresa e itens de estoque, consolida quantidades por SKU e converte unidades em
+    quilogramas quando uma gramatura confiável pode ser identificada. A integração contábil
+    é somente leitura: o Aplicativo não cria, altera nem exclui itens ou lançamentos no
+    QuickBooks Online.
+  </p>
+
+  <h2>4. Responsabilidades do usuário</h2>
+  <p>Você é responsável por:</p>
+  <ul>
+    <li>possuir autorização para conectar e consultar cada empresa selecionada;</li>
+    <li>proteger suas credenciais, dispositivos e senha de acesso ao painel;</li>
+    <li>manter corretos os SKUs, nomes, quantidades e gramaturas na fonte dos dados;</li>
+    <li>revisar itens marcados como conflito, sem SKU ou com peso não identificado;</li>
+    <li>usar o Aplicativo em conformidade com a legislação e com os termos aplicáveis da Intuit.</li>
+  </ul>
+
+  <h2>5. Usos proibidos</h2>
+  <p>
+    Você não pode usar o Aplicativo para violar direitos de terceiros, contornar controles
+    de acesso, introduzir código malicioso, tentar obter acesso não autorizado, interferir
+    na operação do serviço ou utilizar dados de uma empresa sem autorização adequada.
+  </p>
+
+  <h2>6. QuickBooks Online e serviços de terceiros</h2>
+  <p>
+    O uso da integração depende da disponibilidade e das regras da plataforma da Intuit.
+    QuickBooks e Intuit são marcas de seus respectivos titulares. {{ legal_business_name }}
+    é responsável pelo Aplicativo e não afirma que este produto seja patrocinado, certificado
+    ou operado pela Intuit. Os termos da Intuit também se aplicam ao uso da conta QuickBooks.
+  </p>
+
+  <h2>7. Privacidade e segurança</h2>
+  <p>
+    O tratamento de dados relacionado ao Aplicativo está descrito na
+    <a href="{{ url_for('privacy_policy') }}">Política de Privacidade</a>, que integra estes
+    termos. Você pode remover uma conexão pelo painel e também solicitar assistência pelo
+    e-mail indicado ao final deste documento.
+  </p>
+
+  <h2>8. Resultados e ausência de aconselhamento profissional</h2>
+  <p>
+    Relatórios, totais e conversões são ferramentas auxiliares e dependem da qualidade dos
+    dados recebidos. O Aplicativo não substitui inventário físico, auditoria ou orientação
+    contábil, fiscal, jurídica ou financeira. Antes de tomar decisões, revise os dados de
+    origem e os alertas exibidos pelo sistema.
+  </p>
+
+  <h2>9. Disponibilidade e alterações</h2>
+  <p>
+    Podemos realizar manutenção, corrigir falhas, alterar ou descontinuar funcionalidades.
+    Procuraremos preservar a segurança e avisar sobre mudanças materiais quando razoavelmente
+    possível. A disponibilidade também pode ser afetada por internet, hospedagem e serviços
+    da Intuit fora de nosso controle.
+  </p>
+
+  <h2>10. Garantias e limitação de responsabilidade</h2>
+  <p>
+    Na extensão permitida pela legislação aplicável, o Aplicativo é fornecido conforme
+    disponível, sem garantia de operação ininterrupta ou de que todo dado de origem esteja
+    correto. Não seremos responsáveis por decisões tomadas sem a conferência dos dados,
+    indisponibilidade de terceiros ou danos indiretos e lucros cessantes quando essa exclusão
+    for legalmente admitida. Nenhuma disposição limita direitos ou responsabilidades que não
+    possam ser afastados por lei.
+  </p>
+
+  <h2>11. Suspensão, encerramento e desconexão</h2>
+  <p>
+    O acesso poderá ser suspenso em caso de violação destes termos, risco de segurança ou
+    exigência legal. Você pode interromper o uso a qualquer momento e desconectar as empresas
+    pelo painel. As regras de exclusão e retenção estão detalhadas na Política de Privacidade.
+  </p>
+
+  <h2>12. Lei aplicável</h2>
+  <p>
+    Este contrato é regido pelas leis de {{ legal_country }}. O foro competente será definido
+    conforme a legislação aplicável, sem afastar direitos obrigatórios do consumidor ou do
+    titular de dados quando existentes.
+  </p>
+
+  <h2>13. Alterações deste contrato</h2>
+  <p>
+    Podemos atualizar estes termos para refletir mudanças legais, técnicas ou operacionais.
+    A data de atualização será indicada no início da página. O uso continuado após uma mudança
+    material representa aceitação da nova versão, quando permitido por lei.
+  </p>
+
+  <h2>14. Contato</h2>
+  <p>
+    Dúvidas sobre estes termos podem ser enviadas para {{ legal_business_name }} pelo e-mail
+    <a href="mailto:{{ legal_contact_email }}">{{ legal_contact_email }}</a>.
+  </p>
+</article>
+{% endblock %}

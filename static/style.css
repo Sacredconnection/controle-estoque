@@ -25,7 +25,7 @@ code { background: #eef2f5; border-radius: 5px; padding: 2px 5px; }
   padding: 18px 32px; background: #132f49; color: white;
   position: sticky; top: 0; z-index: 10;
 }
-.brand { font-weight: 800; font-size: 20px; }
+.brand { color: inherit; font-weight: 800; font-size: 20px; text-decoration: none; }
 .subtitle { color: #c6d5e2; font-size: 13px; margin-top: 2px; }
 .top-actions, .button-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .container { max-width: 1500px; margin: 0 auto; padding: 28px; }
@@ -88,6 +88,29 @@ tbody tr:hover { background: #f5f9fc; }
 .flash-error { background: #ffe1e1; color: #7b2929; }
 .login-card { max-width: 460px; margin: 80px auto; padding: 28px; }
 .login-form { display: grid; gap: 12px; }
+.site-footer {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  max-width: 1500px; margin: 0 auto; padding: 8px 28px 28px; color: var(--muted); font-size: 13px;
+}
+.site-footer nav { display: flex; gap: 16px; flex-wrap: wrap; }
+.site-footer a { color: var(--primary); }
+.legal-card {
+  max-width: 920px; margin: 12px auto; padding: 34px 42px;
+  background: var(--card); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow);
+}
+.legal-card h1 { margin: 0 0 8px; font-size: clamp(28px, 4vw, 40px); }
+.legal-card h2 { margin: 30px 0 10px; font-size: 20px; color: #173d5d; }
+.legal-card p, .legal-card li { line-height: 1.7; }
+.legal-card li + li { margin-top: 7px; }
+.legal-card a { color: var(--primary); }
+.legal-meta { color: var(--muted); margin-bottom: 26px; }
+.legal-summary { background: #eaf3fa; border-left: 4px solid var(--primary); padding: 15px 18px; border-radius: 8px; }
+.action-card {
+  max-width: 720px; margin: 70px auto; padding: 34px;
+  background: var(--card); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow);
+}
+.action-card h1 { margin-top: 0; }
+.action-card p { line-height: 1.65; }
 
 @media (max-width: 1000px) {
   .company-grid { grid-template-columns: 1fr; }
@@ -99,6 +122,8 @@ tbody tr:hover { background: #f5f9fc; }
   .container { padding: 16px; }
   .topbar { padding: 14px 16px; }
   .stats-grid { grid-template-columns: 1fr 1fr; }
+  .site-footer { align-items: flex-start; flex-direction: column; padding: 8px 16px 24px; }
+  .legal-card, .action-card { padding: 24px 20px; }
 }
 
 .stat-warning { background: #fff4df; border-color: #e8c47d; }

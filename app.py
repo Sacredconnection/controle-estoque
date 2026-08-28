@@ -114,12 +114,43 @@ def inject_globals():
         "labels": settings.labels,
         "qbo_environment": settings.qbo_environment,
         "credentials_ready": settings.credentials_ready,
+        "legal_business_name": settings.legal_business_name,
+        "legal_contact_email": settings.legal_contact_email,
+        "legal_country": settings.legal_country,
     }
 
 
 @app.route("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.route("/launch")
+def launch():
+    return redirect(url_for("index"))
+
+
+@app.route("/connect")
+@app.route("/reconnect")
+def connect_landing():
+    return render_template("connect.html")
+
+
+@app.route("/disconnect")
+def disconnect_landing():
+    return render_template("disconnect.html")
+
+
+@app.route("/eula")
+@app.route("/termos-de-uso")
+def eula():
+    return render_template("eula.html")
+
+
+@app.route("/privacy")
+@app.route("/politica-de-privacidade")
+def privacy_policy():
+    return render_template("privacy.html")
 
 
 @app.route("/login", methods=["GET", "POST"])

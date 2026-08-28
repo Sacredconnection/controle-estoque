@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}Política de privacidade · Estoque QuickBooks{% endblock %}
+{% block content %}
+<article class="legal-card">
+  <h1>Política de Privacidade</h1>
+  <p class="legal-meta">Última atualização: 28 de agosto de 2026</p>
+
+  <p class="legal-summary">
+    Esta política explica como {{ legal_business_name }} coleta, utiliza, armazena e protege
+    informações ao operar o aplicativo de consolidação de estoque (“Aplicativo”). A integração
+    consulta dados do QuickBooks Online somente para exibir e exportar o estoque consolidado.
+  </p>
+
+  <h2>1. Responsável pelo tratamento</h2>
+  <p>
+    O responsável pelo Aplicativo é {{ legal_business_name }}, com operação em
+    {{ legal_country }}. Solicitações sobre privacidade podem ser enviadas para
+    <a href="mailto:{{ legal_contact_email }}">{{ legal_contact_email }}</a>.
+  </p>
+
+  <h2>2. Informações tratadas</h2>
+  <p>Conforme as funções utilizadas, o Aplicativo pode tratar:</p>
+  <ul>
+    <li>
+      <strong>Dados de conexão:</strong> identificador da empresa no QuickBooks
+      (<code>realmId</code>), nome da empresa, tokens OAuth e datas de validade.
+    </li>
+    <li>
+      <strong>Dados de estoque:</strong> identificador do item, SKU, nome do produto,
+      quantidade disponível, tipo do item, situação ativa e datas de sincronização.
+    </li>
+    <li>
+      <strong>Dados derivados:</strong> SKU normalizado, correspondência entre empresas,
+      gramatura identificada, quantidades consolidadas e conversões para quilogramas.
+    </li>
+    <li>
+      <strong>Dados técnicos:</strong> registros de sincronização, falhas operacionais e,
+      conforme a infraestrutura de hospedagem, endereço IP, data, horário, navegador e rota
+      acessada em logs necessários à segurança e ao diagnóstico.
+    </li>
+    <li>
+      <strong>Cookie de sessão:</strong> identificador essencial para autenticação do painel
+      e proteção do fluxo OAuth. O Aplicativo não utiliza cookies de publicidade ou análise.
+    </li>
+  </ul>
+  <p>
+    O Aplicativo não solicita sua senha da Intuit. A autenticação ocorre em páginas da própria
+    Intuit. O Aplicativo não foi projetado para consultar clientes, funcionários, folha de
+    pagamento, contas bancárias ou transações contábeis.
+  </p>
+
+  <h2>3. Como os dados são obtidos</h2>
+  <p>
+    Os dados são recebidos da API do QuickBooks Online depois que um usuário autorizado concede
+    acesso pelo OAuth 2.0. Também recebemos informações fornecidas diretamente no ambiente do
+    Aplicativo e dados técnicos gerados durante sua utilização.
+  </p>
+
+  <h2>4. Finalidades</h2>
+  <p>Utilizamos as informações para:</p>
+  <ul>
+    <li>conectar e manter autorizadas até duas empresas do QuickBooks Online;</li>
+    <li>sincronizar, comparar e consolidar os respectivos itens de estoque;</li>
+    <li>identificar gramaturas e calcular totais em unidades e quilogramas;</li>
+    <li>gerar visualizações e arquivos CSV ou Excel solicitados pelo usuário;</li>
+    <li>proteger o acesso, prevenir abuso, diagnosticar falhas e prestar suporte;</li>
+    <li>cumprir obrigações legais e exercer direitos em processos, quando necessário.</li>
+  </ul>
+
+  <h2>5. Bases legais</h2>
+  <p>
+    Quando a legislação de proteção de dados for aplicável, o tratamento poderá se apoiar na
+    execução de contrato ou de procedimentos solicitados pelo usuário, no legítimo interesse
+    de operar e proteger o serviço, no cumprimento de obrigação legal e, quando exigido, no
+    consentimento ou autorização do titular. A autorização OAuth pode ser revogada.
+  </p>
+
+  <h2>6. Compartilhamento</h2>
+  <p>
+    Não vendemos dados pessoais e não os utilizamos para publicidade. Informações podem ser
+    processadas pela Intuit para autenticação e fornecimento da API, pelo provedor que hospedar
+    o Aplicativo e por fornecedores estritamente necessários à infraestrutura, sempre de acordo
+    com a finalidade do serviço. Também poderemos divulgar dados para cumprir lei, ordem válida
+    ou proteger direitos e segurança.
+  </p>
+
+  <h2>7. Armazenamento, retenção e exclusão</h2>
+  <p>
+    Conexões, tokens e cópias do estoque ficam no banco local da instância que hospeda o
+    Aplicativo. Ao desconectar uma empresa pelo painel, os tokens e o estoque associados são
+    removidos. Se a desconexão ocorrer apenas dentro do QuickBooks Online, o usuário deve abrir
+    a <a href="{{ url_for('disconnect_landing') }}">página de desconexão</a> e concluir também
+    a remoção no painel ou solicitar a exclusão.
+  </p>
+  <p>
+    Registros técnicos mínimos de sincronização podem permanecer pelo período necessário à
+    segurança, diagnóstico e cumprimento de obrigações. Backups, quando existentes, são
+    eliminados conforme o ciclo de retenção da infraestrutura.
+  </p>
+  <p>
+    O usuário pode solicitar a exclusão de seus dados pelo e-mail
+    <a href="mailto:{{ legal_contact_email }}">{{ legal_contact_email }}</a>. Poderemos pedir
+    informações adicionais para confirmar a identidade e a autoridade sobre a empresa conectada.
+  </p>
+
+  <h2>8. Segurança</h2>
+  <p>
+    Aplicamos medidas destinadas a reduzir riscos de acesso indevido. Os tokens OAuth são
+    criptografados antes de serem gravados; chaves e banco devem ser mantidos em área restrita;
+    cookies de sessão usam proteções contra acesso por scripts; e implantações públicas devem
+    utilizar HTTPS e senha forte. Nenhum método é absolutamente seguro, por isso incidentes
+    serão avaliados e comunicados conforme a legislação aplicável.
+  </p>
+
+  <h2>9. Transferências internacionais</h2>
+  <p>
+    A Intuit e os provedores de infraestrutura podem processar informações em outros países.
+    Quando exigido, serão adotadas salvaguardas contratuais e técnicas adequadas à legislação
+    aplicável.
+  </p>
+
+  <h2>10. Direitos do titular</h2>
+  <p>
+    Conforme a legislação aplicável, o titular pode solicitar confirmação de tratamento,
+    acesso, correção, portabilidade, anonimização, oposição, revisão, informação sobre
+    compartilhamento ou exclusão. Algumas solicitações poderão ser limitadas por obrigações
+    legais, segurança ou necessidade de preservar direitos de terceiros.
+  </p>
+
+  <h2>11. Crianças e adolescentes</h2>
+  <p>
+    O Aplicativo é destinado a atividades empresariais e não é direcionado a crianças ou
+    adolescentes. Não coletamos intencionalmente dados de menores por meio desta integração.
+  </p>
+
+  <h2>12. Alterações desta política</h2>
+  <p>
+    Esta política pode ser atualizada para refletir mudanças legais, técnicas ou operacionais.
+    A versão vigente e sua data serão mantidas nesta página. Mudanças materiais serão comunicadas
+    por meio razoável quando necessário.
+  </p>
+
+  <h2>13. Contato</h2>
+  <p>
+    Para dúvidas, solicitações ou reclamações relacionadas a privacidade, escreva para
+    <a href="mailto:{{ legal_contact_email }}">{{ legal_contact_email }}</a>.
+  </p>
+</article>
+{% endblock %}

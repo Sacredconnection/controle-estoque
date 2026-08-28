@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Conectar ou reconectar · Estoque QuickBooks{% endblock %}
+{% block content %}
+<section class="action-card">
+  <div class="eyebrow">QuickBooks Online</div>
+  <h1>Conectar ou reconectar uma empresa</h1>
+  <p>
+    Abra o painel para escolher Empresa A ou Empresa B. Você será encaminhado à Intuit para
+    autorizar o acesso e escolher a empresa do QuickBooks Online. O aplicativo solicita acesso
+    contábil somente para leitura do estoque.
+  </p>
+  {% if not credentials_ready %}
+  <div class="notice notice-warning">
+    A integração ainda não possui credenciais de produção configuradas. O administrador deve
+    preencher as variáveis <code>QBO_CLIENT_ID</code> e <code>QBO_CLIENT_SECRET</code>.
+  </div>
+  {% endif %}
+  <div class="button-row">
+    <a class="btn btn-primary" href="{{ url_for('index') }}">Abrir painel</a>
+    <a class="btn btn-secondary" href="{{ url_for('privacy_policy') }}">Como tratamos os dados</a>
+  </div>
+  <p class="muted">
+    Se uma autorização expirou, selecione novamente o mesmo espaço da empresa no painel e
+    conclua o fluxo da Intuit. Isso substitui a autorização anterior.
+  </p>
+</section>
+{% endblock %}

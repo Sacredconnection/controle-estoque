@@ -184,6 +184,22 @@ O Excel exportado possui três abas:
 - Para uso público, configure `APP_PASSWORD` e HTTPS.
 - O servidor local inicia em `127.0.0.1`, não ficando acessível na rede por padrão.
 
+### URLs públicas para publicação na Intuit
+
+O aplicativo disponibiliza rotas públicas que continuam acessíveis mesmo com
+`APP_PASSWORD` configurada:
+
+- contrato de licença: `/eula` (alternativa: `/termos-de-uso`);
+- política de privacidade: `/privacy` (alternativa: `/politica-de-privacidade`);
+- lançamento do aplicativo: `/launch`;
+- desconexão: `/disconnect`;
+- conexão ou reconexão: `/connect` (alternativa: `/reconnect`).
+
+Em produção, cadastre URLs HTTPS completas, por exemplo
+`https://seu-dominio.com/eula` e `https://seu-dominio.com/privacy`. O campo Host domain
+recebe apenas o domínio, sem `https://`. Antes de publicar, confirme
+`LEGAL_BUSINESS_NAME`, `LEGAL_CONTACT_EMAIL` e `LEGAL_COUNTRY` no arquivo `.env`.
+
 ## 8. Estrutura do projeto
 
 ```text

@@ -13,6 +13,9 @@ class Settings:
     qbo_minor_version: str
     company_a_label: str
     company_b_label: str
+    legal_business_name: str
+    legal_contact_email: str
+    legal_country: str
     app_password: str
     host: str
     port: int
@@ -39,6 +42,15 @@ class Settings:
             qbo_minor_version=os.getenv("QBO_MINOR_VERSION", "75").strip(),
             company_a_label=os.getenv("COMPANY_A_LABEL", "Empresa A").strip() or "Empresa A",
             company_b_label=os.getenv("COMPANY_B_LABEL", "Empresa B").strip() or "Empresa B",
+            legal_business_name=os.getenv(
+                "LEGAL_BUSINESS_NAME", "Sacred Connection"
+            ).strip()
+            or "Sacred Connection",
+            legal_contact_email=os.getenv(
+                "LEGAL_CONTACT_EMAIL", "info@sacredconnection.co"
+            ).strip()
+            or "info@sacredconnection.co",
+            legal_country=os.getenv("LEGAL_COUNTRY", "Brasil").strip() or "Brasil",
             app_password=os.getenv("APP_PASSWORD", "").strip(),
             host=os.getenv("HOST", "127.0.0.1").strip() or "127.0.0.1",
             port=port,
