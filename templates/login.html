@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Entrar · Estoque QuickBooks{% endblock %}
+{% block content %}
+<section class="login-card">
+  <h1>Acesso ao painel</h1>
+  <p>Digite a senha definida em <code>APP_PASSWORD</code> no arquivo <code>.env</code>.</p>
+  {% if error %}<div class="flash flash-error">{{ error }}</div>{% endif %}
+  <form method="post" class="login-form">
+    <label for="password">Senha</label>
+    <input id="password" name="password" type="password" autofocus required>
+    <button class="btn btn-primary" type="submit">Entrar</button>
+  </form>
+</section>
+{% endblock %}

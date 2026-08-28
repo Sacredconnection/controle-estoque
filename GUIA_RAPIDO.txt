@@ -1,0 +1,34 @@
+GUIA RÁPIDO — ESTOQUE EM UNIDADES E KG
+======================================
+
+1. Extraia a pasta.
+2. Abra iniciar_windows.bat.
+3. Clique em "Carregar demonstração 250g/500g" para testar.
+4. Para dados reais, edite o arquivo .env com Client ID e Client Secret da Intuit.
+5. Reinicie o programa.
+6. Conecte a Empresa A e selecione o primeiro QuickBooks.
+7. Conecte a Empresa B e selecione o segundo QuickBooks.
+8. Clique em "Atualizar as duas".
+9. Veja:
+   - unidades de cada empresa;
+   - peso por unidade;
+   - kg de cada empresa;
+   - kg total;
+   - resumo do mesmo rapé em potes de 250g e 500g.
+10. Use "Exportar Excel" para baixar as abas detalhada, resumo por rapé e resumo geral.
+
+REGRA DE CONVERSÃO
+- 250g = 0,250 kg por unidade.
+- 500g = 0,500 kg por unidade.
+- Exemplo: 20 potes de 250g = 5,000 kg.
+
+COMO O PROGRAMA IDENTIFICA O PESO
+- Pelo nome: "250g", "500g", "1 kg" etc.
+- Pelo SKU: "-250", "-500", "500G" etc.
+- Se não encontrar um peso confiável, mostra "—" e marca para revisão.
+- Não adivinha peso a partir de códigos ambíguos.
+
+IMPORTANTE
+- Produção exige URL HTTPS pública cadastrada na Intuit.
+- O programa somente lê os dados; não altera o QuickBooks.
+- Não compartilhe .env, instance/*.db ou instance/*.key.

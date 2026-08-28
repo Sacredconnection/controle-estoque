@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if not credentials_ready %}
+<section class="notice notice-warning">
+  <strong>Modo sem credenciais.</strong>
+  O painel pode ser testado com dados de demonstração. Para conectar os QuickBooks reais,
+  preencha <code>QBO_CLIENT_ID</code>, <code>QBO_CLIENT_SECRET</code> e
+  <code>QBO_REDIRECT_URI</code> no arquivo <code>.env</code> e reinicie o programa.
+</section>
+{% endif %}
+
+{% if production_redirect_warning %}
+<section class="notice notice-danger">
+  <strong>Atenção:</strong> você selecionou produção, mas o endereço de retorno não começa com
+  <code>https://</code>. Para empresas reais, configure um endereço HTTPS público aceito no
+  painel da Intuit.
+</section>
+{% endif %}
+
+<section class="company-grid">
+  {% for slot in ['A', 'B'] %}
+    {% set conn = connections[slot] %}
+    <article class="company-card">
+      <div class="company-card-head">
+        <div>
+          <div class="eyebrow">QuickBooks {{ slot }}</div>
+          <h2>{{ labels[slot] }}</h2>
+        </div>
+        {% if conn %}
+          <span class="status-dot status-ok">Conectado</span>
+        {% else %}
+          <span class="status-dot status-off">Desconectado</span>
+        {% endif %}
+      </div>
+
+      {% if conn %}
+        <div class="company-name">{{ conn.company_name }}</div>
+        <dl class="mini-stats">
+          <div><dt>Itens</dt><dd>{{ conn.item_count }}</dd></div>
+          <div><dt>QtyOnHand somado</dt><dd>{{ conn.qty_total|fmt3 }}</dd></div>
+          <div><dt>Última leitura</dt><dd>{{ conn.last_sync or 'Ainda não sincronizado' }}</dd></div>
+        </dl>
+        <div class="button-row">
+          {% if not conn.is_demo %}
+          <form method="post" action="{{ url_for('sync_company', slot=slot) }}">
+            <button class="btn btn-primary" type="submit">Atualizar</button>
+          </form>
+          {% endif %}
+          <form method="post" action="{{ url_for('disconnect_company', slot=slot) }}"
+                onsubmit="return confirm('Remover esta conexão e o estoque salvo?');">
+            <button class="btn btn-danger" type="submit">Remover</button>
+          </form>
+        </div>
+      {% else %}
+        <p class="muted">Autorize esta empresa para ler SKU, nome e QtyOnHand.</p>
+        <a class="btn btn-primary {{ 'disabled' if not credentials_ready }}"
+           href="{{ url_for('connect_company', slot=slot) if credentials_ready else '#' }}">
+          Conectar {{ labels[slot] }}
+        </a>
+      {% endif %}
+    </article>
+  {% endfor %}
+</section>
+
+<section class="toolbar-card">
+  <div>
+    <h2>Estoque consolidado em unidades e kg</h2>
+    <p>
+      O sistema cruza os dois QuickBooks pelo SKU e converte cada pote conforme a gramatura
+      identificada no nome ou no final do SKU, como <code>250g</code>, <code>500g</code>,
+      <code>-250</code> ou <code>-500</code>.
+    </p>
+  </div>
+  <div class="button-row">
+    <form method="post" action="{{ url_for('sync_all') }}">
+      <button class="btn btn-primary" type="submit">Atualizar as duas</button>
+    </form>
+    <a class="btn btn-secondary" href="{{ url_for('export_xlsx') }}">Exportar Excel</a>
+    <a class="btn btn-secondary" href="{{ url_for('export_csv') }}">Exportar CSV</a>
+    {% if any_demo %}
+      <form method="post" action="{{ url_for('demo_clear') }}">
+        <button class="btn btn-ghost" type="submit">Limpar demonstração</button>
+      </form>
+    {% elif not connections.A and not connections.B %}
+      <form method="post" action="{{ url_for('demo_load') }}">
+        <button class="btn btn-ghost" type="submit">Carregar demonstração 250g/500g</button>
+      </form>
+    {% endif %}
+  </div>
+</section>
+
+<section class="stats-grid">
+  <article class="stat-card"><span>SKUs consolidados</span><strong>{{ stats.products }}</strong></article>
+  <article class="stat-card"><span>Kg identificados · {{ labels.A }}</span><strong>{{ stats.kg_a|fmt3 }}</strong></article>
+  <article class="stat-card"><span>Kg identificados · {{ labels.B }}</span><strong>{{ stats.kg_b|fmt3 }}</strong></article>
+  <article class="stat-card stat-total"><span>Kg identificados · total</span><strong>{{ stats.kg_total|fmt3 }}</strong></article>
+  <article class="stat-card"><span>Pesos identificados</span><strong>{{ stats.weight_known }}</strong></article>
+  <article class="stat-card {{ 'stat-warning' if stats.weight_unknown + stats.weight_conflicts else '' }}">
+    <span>Revisar peso</span><strong>{{ stats.weight_unknown + stats.weight_conflicts }}</strong>
+  </article>
+</section>
+
+<form method="get" class="filter-card">
+  <input type="search" name="q" value="{{ search }}" placeholder="Buscar SKU, produto ou gramatura...">
+  <label><input type="checkbox" name="hide_zero" value="1" {% if hide_zero %}checked{% endif %}> Ocultar total zero</label>
+  <label><input type="checkbox" name="only_unmatched" value="1" {% if only_unmatched %}checked{% endif %}> Somente não encontrados nos dois</label>
+  <label><input type="checkbox" name="only_weight_issues" value="1" {% if only_weight_issues %}checked{% endif %}> Somente peso não identificado/conflitante</label>
+  <button class="btn btn-secondary" type="submit">Filtrar</button>
+  <a class="btn btn-ghost" href="{{ url_for('index') }}">Limpar</a>
+</form>
+
+<section class="section-heading">
+  <div>
+    <h2>Resumo por rapé</h2>
+    <p>Combina potes de 250g e 500g quando o código-base pode ser identificado com segurança.</p>
+  </div>
+</section>
+<section class="table-card table-card-compact">
+  <div class="table-scroll base-table-scroll">
+    <table class="base-table">
+      <thead>
+        <tr>
+          <th>Código-base</th>
+          <th>Produto-base</th>
+          <th class="number">Potes {{ labels.A }}</th>
+          <th class="number">Kg {{ labels.A }}</th>
+          <th class="number">Potes {{ labels.B }}</th>
+          <th class="number">Kg {{ labels.B }}</th>
+          <th class="number">Kg total</th>
+          <th>Variações incluídas</th>
+          <th>Conferência</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in base_rows %}
+        <tr>
+          <td><code>{{ row.base_sku }}</code></td>
+          <td>{{ row.product }}</td>
+          <td class="number">{{ row.qty_a|fmt3 }}</td>
+          <td class="number">{{ row.kg_a|fmt3 }}</td>
+          <td class="number">{{ row.qty_b|fmt3 }}</td>
+          <td class="number">{{ row.kg_b|fmt3 }}</td>
+          <td class="number total-cell">{{ row.kg_total|fmt3 }}</td>
+          <td>{{ row.variants }}</td>
+          <td>
+            <span class="pill {{ 'pill-ok' if row.complete else 'pill-review' }}">{{ row.status }}</span>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9" class="empty-state">Nenhum estoque carregado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section-heading detail-heading">
+  <div>
+    <h2>Detalhamento por SKU e gramatura</h2>
+    <p>Mostra a quantidade original em unidades e a conversão correspondente para quilos.</p>
+  </div>
+</section>
+<section class="table-card">
+  <div class="table-scroll">
+    <table id="inventory-table" class="detail-table">
+      <thead>
+        <tr>
+          <th>SKU consolidado</th>
+          <th>Produto</th>
+          <th>Peso por unidade</th>
+          <th>SKU {{ labels.A }}</th>
+          <th class="number">Unid. {{ labels.A }}</th>
+          <th class="number">Kg {{ labels.A }}</th>
+          <th>SKU {{ labels.B }}</th>
+          <th class="number">Unid. {{ labels.B }}</th>
+          <th class="number">Kg {{ labels.B }}</th>
+          <th class="number">Unid. total</th>
+          <th class="number">Kg total</th>
+          <th>Conferência</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        <tr>
+          <td><code>{{ row.sku }}</code></td>
+          <td>
+            {{ row.product }}
+            {% if row.inactive_a or row.inactive_b %}<span class="tiny-warning">item inativo</span>{% endif %}
+          </td>
+          <td>
+            <span class="weight-value">{{ row.weight_label }}</span>
+            <span class="weight-source">{{ row.weight_source }}</span>
+          </td>
+          <td>{{ row.sku_a or '—' }}</td>
+          <td class="number">{{ row.qty_a|fmt3 }}</td>
+          <td class="number">{{ row.kg_a|fmt3 }}</td>
+          <td>{{ row.sku_b or '—' }}</td>
+          <td class="number">{{ row.qty_b|fmt3 }}</td>
+          <td class="number">{{ row.kg_b|fmt3 }}</td>
+          <td class="number">{{ row.total|fmt3 }}</td>
+          <td class="number total-cell">{{ row.kg_total|fmt3 }}</td>
+          <td>
+            {% if row.unit_weight_kg is none %}
+              <span class="pill pill-review">{{ row.status }}</span>
+            {% elif row.status.startswith('Nos dois') %}
+              <span class="pill pill-ok">{{ row.status }}</span>
+            {% else %}
+              <span class="pill pill-review">{{ row.status }}</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="12" class="empty-state">Nenhum estoque carregado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="notice notice-info">
+  <strong>Como a conversão funciona:</strong> 20 unidades de 250g viram 5,000 kg e 8 unidades de
+  500g viram 4,000 kg. O programa não adivinha quando a gramatura não está clara; nesses casos,
+  deixa os quilos em “—” e marca o item para revisão. O acesso ao QuickBooks continua somente leitura.
+</section>
+{% endblock %}

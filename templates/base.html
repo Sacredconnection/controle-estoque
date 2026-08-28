@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Estoque QuickBooks{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <div class="brand">Estoque QuickBooks</div>
+      <div class="subtitle">Duas empresas · unidades e quilos</div>
+    </div>
+    <div class="top-actions">
+      <span class="badge {{ 'badge-prod' if qbo_environment == 'production' else 'badge-sandbox' }}">
+        {{ 'Produção' if qbo_environment == 'production' else 'Sandbox' }}
+      </span>
+      {% if session.get('authenticated') %}
+      <form method="post" action="{{ url_for('logout') }}">
+        <button class="btn btn-ghost" type="submit">Sair</button>
+      </form>
+      {% endif %}
+    </div>
+  </header>
+
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-stack">
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
