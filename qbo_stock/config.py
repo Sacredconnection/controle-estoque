@@ -28,9 +28,14 @@ class Settings:
             raise ValueError("QBO_ENVIRONMENT deve ser 'sandbox' ou 'production'.")
 
         redirect_uri = os.getenv("QBO_REDIRECT_URI", "").strip()
-        render_hostname = os.getenv("RENDER_EXTERNAL_HOSTNAME", "").strip().strip("/")
-        if not redirect_uri and render_hostname:
-            redirect_uri = f"https://{render_hostname}/oauth/callback"
+        vercel_hostname = (
+            os.getenv("VERCEL_PROJECT_PRODUCTION_URL", "").strip()
+            or os.getenv("VERCEL_URL", "").strip()
+        ).strip("/")
+        if not redirect_uri and vercel_hostname:
+            if not vercel_hostname.startswith(("http://", "https://")):
+                vercel_hostname = f"https://{vercel_hostname}"
+            redirect_uri = f"{vercel_hostname}/oauth/callback"
         if not redirect_uri:
             redirect_uri = "http://localhost:8000/oauth/callback"
 

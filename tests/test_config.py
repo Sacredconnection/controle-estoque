@@ -1,22 +1,24 @@
 from qbo_stock.config import Settings
 
 
-def test_render_hostname_defines_production_oauth_callback(monkeypatch):
+def test_vercel_hostname_defines_production_oauth_callback(monkeypatch):
     monkeypatch.setenv("QBO_ENVIRONMENT", "production")
-    monkeypatch.setenv("RENDER_EXTERNAL_HOSTNAME", "controle-estoque-qbo.onrender.com")
+    monkeypatch.setenv(
+        "VERCEL_PROJECT_PRODUCTION_URL", "controle-estoque-pi-two.vercel.app"
+    )
     monkeypatch.delenv("QBO_REDIRECT_URI", raising=False)
 
     settings = Settings.from_env()
 
     assert settings.qbo_redirect_uri == (
-        "https://controle-estoque-qbo.onrender.com/oauth/callback"
+        "https://controle-estoque-pi-two.vercel.app/oauth/callback"
     )
     assert not settings.production_redirect_warning
 
 
-def test_explicit_redirect_uri_has_priority_over_render_hostname(monkeypatch):
+def test_explicit_redirect_uri_has_priority_over_vercel_hostname(monkeypatch):
     monkeypatch.setenv("QBO_ENVIRONMENT", "production")
-    monkeypatch.setenv("RENDER_EXTERNAL_HOSTNAME", "controle-estoque-qbo.onrender.com")
+    monkeypatch.setenv("VERCEL_URL", "preview-controle-estoque.vercel.app")
     monkeypatch.setenv("QBO_REDIRECT_URI", "https://estoque.example.com/oauth/callback")
 
     settings = Settings.from_env()

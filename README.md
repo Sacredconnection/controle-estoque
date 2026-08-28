@@ -200,43 +200,48 @@ Em produção, cadastre URLs HTTPS completas, por exemplo
 recebe apenas o domínio, sem `https://`. Antes de publicar, confirme
 `LEGAL_BUSINESS_NAME`, `LEGAL_CONTACT_EMAIL` e `LEGAL_COUNTRY` no arquivo `.env`.
 
-## 8. Publicar no Render com SQLite persistente
+## 8. Publicar na Vercel com SQLite persistente
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Sacredconnection/controle-estoque)
+A Vercel detecta `app.py` como uma única Function Flask. O arquivo `vercel.json` fixa a região
+em São Paulo, permite até 60 segundos por execução e exclui arquivos de desenvolvimento do
+pacote. Durante a execução, o SQLite fica na área gravável temporária da Function.
 
-O arquivo `render.yaml` cria um serviço Docker com uma única instância e um disco de 1 GB
-montado em `/app/instance`. Esse disco preserva o banco SQLite, os tokens OAuth criptografados
-e as chaves entre reinícios e deploys. A Render exige um serviço pago para anexar disco
-persistente; revise o valor exibido no painel antes de aprovar.
+Para manter o banco, o estoque e os tokens OAuth entre cold starts, conecte um Vercel Blob:
 
-1. Clique em **Deploy to Render** e autorize o acesso ao repositório.
-2. Revise o Blueprint e defina uma senha forte em `APP_PASSWORD`.
-3. Aplique o Blueprint e aguarde o endereço `*.onrender.com` ficar disponível.
-4. Use esse endereço para preencher as URLs públicas no painel da Intuit.
-5. Depois que a Intuit liberar as credenciais de produção, adicione no ambiente do serviço:
-   - `QBO_CLIENT_ID`;
-   - `QBO_CLIENT_SECRET`.
-6. Reinicie o serviço depois de salvar as credenciais.
+1. Abra o projeto `controle-estoque` no painel da Vercel.
+2. Entre em **Storage** e selecione **Create Database**.
+3. Escolha **Blob**, configure o acesso como **Private** e conecte ao projeto.
+4. A Vercel criará automaticamente a variável `BLOB_READ_WRITE_TOKEN`.
+5. Em **Settings > Environment Variables**, cadastre:
+   - `APP_PASSWORD` com uma senha forte;
+   - `FLASK_SECRET_KEY` com um valor aleatório longo;
+   - `TOKEN_ENCRYPTION_KEY` com uma chave Fernet;
+   - `QBO_CLIENT_ID` e `QBO_CLIENT_SECRET`;
+   - `QBO_ENVIRONMENT=production`;
+   - `QBO_REDIRECT_URI=https://controle-estoque-pi-two.vercel.app/oauth/callback`.
+6. Faça um redeploy da produção.
 
-Quando `QBO_REDIRECT_URI` não é informada, o aplicativo usa automaticamente
-`https://<RENDER_EXTERNAL_HOSTNAME>/oauth/callback`. Se configurar um domínio personalizado,
-adicione `QBO_REDIRECT_URI=https://seu-dominio.com/oauth/callback` no ambiente da Render e
-cadastre exatamente a mesma URL na Intuit.
+Gere os dois segredos localmente, sem colocá-los no GitHub:
 
-Com o endereço fornecido pela Render, preencha a Intuit assim:
-
-```text
-Host domain:              seu-servico.onrender.com
-Launch URL:               https://seu-servico.onrender.com/launch
-Disconnect URL:           https://seu-servico.onrender.com/disconnect
-Connect/Reconnect URL:    https://seu-servico.onrender.com/connect
-End-user license URL:     https://seu-servico.onrender.com/eula
-Privacy policy URL:       https://seu-servico.onrender.com/privacy
-OAuth Redirect URI:       https://seu-servico.onrender.com/oauth/callback
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(48))"
+python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
 ```
 
-Não monte o disco em outro caminho: somente `/app/instance` mantém juntos o banco e as chaves
-necessárias para descriptografar os tokens existentes.
+Sem `BLOB_READ_WRITE_TOKEN`, as páginas públicas continuam disponíveis e o erro de filesystem
+não ocorre, mas conexões e estoque ficam temporários e podem desaparecer em um cold start.
+
+Com o endereço atual da Vercel, preencha a Intuit assim:
+
+```text
+Host domain:              controle-estoque-pi-two.vercel.app
+Launch URL:               https://controle-estoque-pi-two.vercel.app/launch
+Disconnect URL:           https://controle-estoque-pi-two.vercel.app/disconnect
+Connect/Reconnect URL:    https://controle-estoque-pi-two.vercel.app/connect
+End-user license URL:     https://controle-estoque-pi-two.vercel.app/eula
+Privacy policy URL:       https://controle-estoque-pi-two.vercel.app/privacy
+OAuth Redirect URI:       https://controle-estoque-pi-two.vercel.app/oauth/callback
+```
 
 ## 9. Estrutura do projeto
 

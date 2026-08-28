@@ -1,6 +1,14 @@
 {% extends "base.html" %}
 {% block content %}
 
+{% if storage_mode == 'temporario' %}
+<section class="notice notice-warning">
+  <strong>Armazenamento temporário na Vercel.</strong>
+  As páginas públicas estão funcionando, mas conexões e estoque podem desaparecer em um cold
+  start. Conecte um Vercel Blob privado ao projeto antes de autorizar os QuickBooks.
+</section>
+{% endif %}
+
 {% if not credentials_ready %}
 <section class="notice notice-warning">
   <strong>Modo sem credenciais.</strong>

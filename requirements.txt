@@ -5,3 +5,4 @@ openpyxl>=3.1,<4
 cryptography>=42,<47
 waitress>=3.0,<4
 pytest>=8,<10
+vercel>=0.10,<0.11

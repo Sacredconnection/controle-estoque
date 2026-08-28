@@ -31,11 +31,13 @@ from qbo_stock.consolidation import consolidate_by_base_product, consolidate_inv
 from qbo_stock.db import Database
 from qbo_stock.demo import DEMO_ITEMS
 from qbo_stock.qbo import QBOError, QuickBooksService
+from qbo_stock.runtime import instance_dir
 from qbo_stock.security import TokenCipher, load_flask_secret
+from qbo_stock.vercel_storage import VercelBlobDatabase
 
 BASE_DIR = Path(__file__).resolve().parent
-INSTANCE_DIR = BASE_DIR / "instance"
-INSTANCE_DIR.mkdir(exist_ok=True)
+INSTANCE_DIR = instance_dir(BASE_DIR)
+INSTANCE_DIR.mkdir(parents=True, exist_ok=True)
 
 settings = Settings.from_env()
 app = Flask(__name__, instance_path=str(INSTANCE_DIR), instance_relative_config=True)
@@ -47,9 +49,27 @@ app.config.update(
 if settings.qbo_redirect_uri.lower().startswith("https://"):
     app.config["SESSION_COOKIE_SECURE"] = True
 
-db = Database(INSTANCE_DIR / "quickbooks_stock.db")
+blob_token = os.getenv("BLOB_READ_WRITE_TOKEN", "").strip()
+if blob_token:
+    db = VercelBlobDatabase(INSTANCE_DIR / "quickbooks_stock.db", blob_token)
+    storage_mode = "vercel-blob"
+else:
+    db = Database(INSTANCE_DIR / "quickbooks_stock.db")
+    storage_mode = "temporario" if os.getenv("VERCEL", "").strip() else "local"
 cipher = TokenCipher(INSTANCE_DIR)
 qbo = QuickBooksService(settings, db, cipher)
+
+
+@app.before_request
+def refresh_vercel_storage():
+    if storage_mode == "vercel-blob" and request.endpoint not in {
+        "health",
+        "eula",
+        "privacy_policy",
+        "connect_landing",
+        "disconnect_landing",
+    }:
+        db.refresh(strict=False)
 
 
 def protected(view):
@@ -117,12 +137,13 @@ def inject_globals():
         "legal_business_name": settings.legal_business_name,
         "legal_contact_email": settings.legal_contact_email,
         "legal_country": settings.legal_country,
+        "storage_mode": storage_mode,
     }
 
 
 @app.route("/health")
 def health():
-    return {"status": "ok"}
+    return {"status": "ok", "storage": storage_mode}
 
 
 @app.route("/launch")
